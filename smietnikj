@@ -1,0 +1,23 @@
+    def highlightTile(self,*args):
+        if(self.current_hover == args[0]):
+            return
+        else:
+            id = args[0]
+            self.current_hover = id
+        ship_len = self.player.getSelectedLength()
+        ship_ori = self.player.getSelectedOrientation()
+        try:
+            start_tile = self.tiles[id]
+            self.highlighted.append(start_tile)
+            for i in range(ship_len-1):
+                next_tile = self.highlighted[i].getAdjacent(ship_ori)
+                if next_tile == None:
+                    self.valid_location = 0
+                    self.clearHighlighted()
+                    break
+                else:
+                    self.highlighted.append(next_tile)
+            for tile in self.highlighted:
+                tile.imageHighlighted()
+        except TypeError:
+            pass
