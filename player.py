@@ -1,9 +1,15 @@
 class Player():
     def __init__(self):
+        self.window = None
         self.board = None
         self.ships = []
         self.selected_ship = None
         self.shippicker = None
+        self.phase = 0
+        self.turn = 0 #0 its enemy turn, 1 its your turn
+
+    def getTileFromBoard(self,id):
+        return self.board.getTile(id)
 
     def passSelectedToBoard(self):
         if self.selected_ship != None:
@@ -34,6 +40,13 @@ class Player():
         self.shippicker.refreshDropdown()
         self.ships.append(inst)
         self.printinfo(inst)
+        remaining = 0
+        for rem in self.shippicker.remaining:
+            remaining += rem
+        self.window.setBottomInfo("Place remaining " + str(remaining) + " ships.")
+        if(remaining == 0):
+            self.phase = 1
+            self.window.playerPlacementDone()
 
     def printinfo(self,inst):
         print("Added ship: ")
@@ -51,6 +64,16 @@ class Player():
                 return True
         return False
 
+    def getPhase(self):
+        return self.phase
+
+    def takeTurn(self):
+        self.turn = 1
+        print("player turn " + str(self.turn))
+
+    def endTurn(self):
+        self.turn = 0
+        self.window.changeTurn()
 
     def setSelected(self,ship):
         self.selected_ship = ship
@@ -60,3 +83,6 @@ class Player():
 
     def setBoard(self,instance):
         self.board = instance
+
+    def setWindow(self,instance):
+        self.window = instance

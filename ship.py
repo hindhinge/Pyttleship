@@ -6,12 +6,27 @@ class Ship():
         self.orientations = ['right','down','left','top']
         self.orientation = "right" #ship rotation based on position [left,right,top,down]
         self.type = 0 #0 - 2 squares, 1 - 3 squares, 2 - 4 squares, 3 - 6 squares
+        self.tiles_left = 0
+        self.destroyed = 0
+
+    def getRekt(self):
+        self.destroyed = 1
+        for tile in self.tiles:
+            tile.imageShipHit()
+        print("REKT")
+
+    def getHit(self):
+        if self.tiles_left > 1:
+            self.tiles_left -= 1
+        else:
+            self.getRekt()
 
     def setOrientation(self,ori):
         self.orientation = ori
 
     def setLength(self,len):
         self.length = len
+        self.tiles_left = len
 
     def setPosition(self,pos):
         self.position = pos

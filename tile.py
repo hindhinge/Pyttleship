@@ -12,6 +12,9 @@ class Tile(Button):
         self.bg_normal = 'tile_inactive.png'
         self.bg_highlight = 'tile_selection.png'
         self.bg_ship = 'tile_ship.png'
+        self.bg_ship_hit = 'tile_ship_hit.png'
+        self.bg_miss = 'tile_miss.png'
+        self.bg_hit = 'tile_hit.png'
         self.background_normal = self.bg_normal
         Window.bind(mouse_pos=self.on_mouse_pos)
         super(Tile, self).__init__(**kwargs)
@@ -23,6 +26,8 @@ class Tile(Button):
         self.lastpos = (0,0)
         self.inShip = 0
         self.invalid = 0
+        self.shot = 0
+        self.ship = None
 
     def setId(self, id):
         self.identity = id
@@ -35,6 +40,9 @@ class Tile(Button):
 
     def getAdjacent(self,dir):
         return self.adjacent[dir]
+
+    def setInvalid(self):
+        self.invalid = 1
 
     def printAdjacent(self):
         print("Tile id: " + str(self.getId()))
@@ -56,7 +64,18 @@ class Tile(Button):
         self.background_normal = self.bg_normal
     def imageShip(self):
         self.background_normal = self.bg_ship
+    def imageShipHit(self):
+        self.background_normal = self.bg_ship_hit
+    def imageMiss(self):
+        self.background_normal = self.bg_miss
+    def imageHit(self):
+        self.background_normal = self.bg_hit
 
+    def setShip(self,instance):
+        self.ship = instance
+
+    def getShip(self):
+        return self.ship
 
     def on_mouse_pos(self, *args):
         if not self.get_root_window():

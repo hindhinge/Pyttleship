@@ -17,7 +17,7 @@ class Board(GridLayout):
         for i in range(100):
             tile = Tile(self)
             tile.setId(i)
-            tile.text = str(tile.getId())
+            tile.text = str(i)
             tile.bind(on_press = self.clickTile)
             self.tiles.append(tile)
             self.add_widget(tile)
@@ -58,6 +58,7 @@ class PlayerBoard(Board):
     def __init__(self, **kwargs):
         super(PlayerBoard, self).__init__(**kwargs)
         self.player = None
+        self.enemy = None
         self.valid_location = 0
         self.selectedShip = None
         self.selectedShipLen = 0
@@ -73,16 +74,22 @@ class PlayerBoard(Board):
     def setPlayerInstance(self,inst):
         self.player = inst
 
+    def setEnemyInstance(self,inst):
+        self.enemy = inst
+
+    def getTile(self,id):
+        return self.tiles[id]
+
     def highlightTile(self,id):
-        if self.ready == 1:
+        if self.ready == 1 and self.player.getPhase() == 0:
             self.ready = 0
             for tile in self.highlighted:
-                if tile.inShip == 0:
+                if tile.inShip == 0 and tile.invalid == 0:
                     tile.imageInactive()
             self.highlighted = []
             tile = self.tiles[id]
             for i in range(self.selectedShipLen):
-                if tile == None or tile.inShip == 1:
+                if tile == None or tile.inShip == 1 or tile.invalid == 1:
                     self.valid_location = 0
                     break
                 else:
@@ -98,10 +105,19 @@ class PlayerBoard(Board):
         self.player.passSelectedToBoard()
 
     def clickTile(self,instance):
-        if self.valid_location == 1 and self.player.canAdd(self.selectedShip):
+        if self.valid_location == 1 and self.player.canAdd(self.selectedShip) and self.player.getPhase() == 0:
             for tile in self.highlighted:
                 tile.inShip = 1
+                tile.setShip(self.selectedShip)
                 tile.imageShip()
+                neighbourhood = []
+                neighbourhood.append(tile.getAdjacent('right'))
+                neighbourhood.append(tile.getAdjacent('left'))
+                neighbourhood.append(tile.getAdjacent('top'))
+                neighbourhood.append(tile.getAdjacent('down'))
+                for tile in neighbourhood:
+                    if tile != None:
+                        tile.setInvalid()
             self.selectedShip.setTiles(self.highlighted)
             self.player.addShip(self.selectedShip)
 
@@ -114,9 +130,38 @@ class PlayerBoard(Board):
 class EnemyBoard(Board):
     def __init__(self, **kwargs):
         super(EnemyBoard, self).__init__(**kwargs)
+        self.enemy = None
+        self.player = None
+
+    def setPlayerInstance(self,inst):
+        self.player = inst
+
+    def setEnemyInstance(self,inst):
+        self.enemy = inst
 
     def highlightTile(self,id):
         pass
 
     def clearHighlighted(self):
         pass
+
+    def getTile(self,id):
+        return self.tiles[id]
+
+    def clickTile(self, instance):
+        if self.player.turn:
+            id = instance.getId()
+            tile = self.getTile(id)
+            if tile.shot == 1:
+                return
+            else:
+                tile.shot = 1
+                if tile.inShip == 1:
+                    tile.imageHit()
+                    ship = tile.getShip()
+                    ship.getHit()
+                else:
+                    tile.imageMiss()
+                    self.player.endTurn()
+
+
