@@ -9,7 +9,7 @@ class TextBlock(BoxLayout):
         self.size_hint_max_y = 200
         self.orientation = 'vertical'
         self.text_welcome = "Welcome to Pyttleships !"
-        self.text_first_stage = "Place all of your ships on the board to the right.\nThis board will keep track of your enemy shots and your remaining ships."
+        self.text_first_stage = "Place all of your ships on the board to the left.\nThis board will keep track of enemy shots and your remaining ships.\nAfter you place all your ships click on board to the right to take shot."
         self.text_second_stage = "After you finish placing your ships, enemy will do the same."
         self.text_third_stage = "Now, that enemy has placed his ships, its time to take turns at shots to see who will sink all the enemy ships.\nClick on the left board to take a shot."
         self.text_instructions = "Left click - take a shot/place ship\nZ - rotate ship during placement\n"
