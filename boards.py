@@ -1,4 +1,6 @@
 from kivy.uix.gridlayout import GridLayout
+
+from ship import Ship
 from tile import Tile
 
 class Board(GridLayout):
@@ -149,7 +151,7 @@ class EnemyBoard(Board):
         return self.tiles[id]
 
     def clickTile(self, instance):
-        if self.player.turn:
+        if self.player.turn and self.player.phase == 1:
             id = instance.getId()
             tile = self.getTile(id)
             if tile.shot == 1:
@@ -160,6 +162,7 @@ class EnemyBoard(Board):
                     tile.imageHit()
                     ship = tile.getShip()
                     ship.getHit()
+                    self.enemy.checkVictory()
                 else:
                     tile.imageMiss()
                     self.player.endTurn()

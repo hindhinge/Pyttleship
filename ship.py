@@ -8,12 +8,13 @@ class Ship():
         self.type = 0 #0 - 2 squares, 1 - 3 squares, 2 - 4 squares, 3 - 6 squares
         self.tiles_left = 0
         self.destroyed = 0
+        self.owner = None
 
     def getRekt(self):
         self.destroyed = 1
         for tile in self.tiles:
             tile.imageShipHit()
-        print("REKT")
+        self.owner.increaseDestroyed()
 
     def getHit(self):
         if self.tiles_left > 1:
@@ -56,3 +57,6 @@ class Ship():
 
     def getType(self):
         return self.type
+
+    def setOwner(self,instance):
+        self.owner = instance

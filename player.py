@@ -1,3 +1,6 @@
+from ship import Ship
+
+
 class Player():
     def __init__(self):
         self.window = None
@@ -7,6 +10,7 @@ class Player():
         self.shippicker = None
         self.phase = 0
         self.turn = 0 #0 its enemy turn, 1 its your turn
+        self.destroyed = 0
 
     def getTileFromBoard(self,id):
         return self.board.getTile(id)
@@ -36,14 +40,24 @@ class Player():
         self.selected_ship.tiles = []
 
     def addShip(self,inst):
-        self.shippicker.remaining[inst.getType()] -= 1
+        old_inst = inst
+        new_inst = Ship()
+        new_inst.setLength(old_inst.getLength())
+        new_inst.setTiles(old_inst.tiles)
+        for tile in new_inst.tiles:
+            tile.setShip(new_inst)
+        new_inst.orientation = old_inst.getOrientation()
+        new_inst.type = old_inst.type
+        new_inst.setOwner(self)
+        self.shippicker.remaining[new_inst.getType()] -= 1
         self.shippicker.refreshDropdown()
-        self.ships.append(inst)
-        self.printinfo(inst)
+        self.ships.append(new_inst)
+        self.printinfo(new_inst)
         remaining = 0
         for rem in self.shippicker.remaining:
             remaining += rem
         self.window.setBottomInfo("Place remaining " + str(remaining) + " ships.")
+        print(self.ships)
         if(remaining == 0):
             self.phase = 1
             self.window.playerPlacementDone()
@@ -63,6 +77,14 @@ class Player():
             if self.shippicker.sizes[i] == ship_len and self.shippicker.remaining[i] > 0:
                 return True
         return False
+
+    def increaseDestroyed(self):
+        self.destroyed += 1
+
+    def checkVictory(self):
+        print("destroyed: " + str(self.destroyed) + " avaiulable: " + str(len(self.ships)))
+        if self.destroyed == len(self.ships):
+            self.window.triggerEnemyVictory()
 
     def getPhase(self):
         return self.phase

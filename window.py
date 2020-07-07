@@ -1,9 +1,12 @@
+from kivy.uix.modalview import ModalView
+from kivy.uix.popup import Popup
 from kivy.uix.widget import Widget
 from kivy.uix.floatlayout import FloatLayout
 
 from kivy.uix.label import Label
 from boards import PlayerBoard, EnemyBoard
 from container import Container
+from endscreen import EndScreen
 from enemy import Enemy
 from marking import BoardMakings
 from player import Player
@@ -22,7 +25,6 @@ class MainWindow(Widget):
         self.enemy = Enemy()
         self.enemy.setWindow(self)
         self.turn = 0 #0 = plahyer turn, 1 = enemy turn
-
 
         self.container_text = Container("vertical", 1000, 200, 0.25)
         self.textblock = TextBlock(self.container_text)
@@ -79,6 +81,8 @@ class MainWindow(Widget):
         self.layout.width = self.width
         self.layout.height = self.height
         self.layout.pos = (0, 0)
+        
+        self.end_popup = EndScreen()
 
         self.layout.add_widget(self.container_text)
         self.layout.add_widget(self.container_picker)
@@ -96,6 +100,26 @@ class MainWindow(Widget):
         self.setBottomInfo("Enemy has placed his ships. Your turn to fire !")
         self.takeTurn()
         print("window turn "+ str(self.turn))
+
+    def triggerPlayerVictory(self):
+        self.setBottomInfo("Player won ! Restart application to play another game !")
+        self.enemy.phase = 2
+        self.player.phase = 2
+
+    def triggerEnemyVictory(self):
+        self.setBottomInfo("Enemy won ! Restart application to play another game !")
+        self.enemy.phase = 2
+        self.player.phase = 2
+
+    def showDefeatPopup(self):
+        pass
+
+    def showVictoryPopup(self):
+        popup = Popup(title='Test popup',
+                      content=Label(text='Hello popup'),
+                      auto_dismiss = False,
+                      size_hint=(None, None), size=(400, 400))
+        popup.open()
 
     def takeTurn(self):
         if self.turn == 0:

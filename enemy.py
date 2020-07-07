@@ -10,8 +10,10 @@ class Enemy():
         self.sizes = [2,3,4,6]
         self.remaining = [4,3,2,1]
         self.placed = 0
-        self.orientations = {0:'right',1:'down',2:'left',3:'top'}
+        self.orientations = {0:'down',1:'left',2:'top',3:'right'}
         self.priority_shots = []
+        self.forbidden_shots = []
+        self.destroyed = 0
 
 
     def setBoard(self,instance):
@@ -48,7 +50,6 @@ class Enemy():
         for tile in tiles:
             tile.inShip = 1
             tile.setShip(output)
-            tile.imageShip()
             neighbourhood = []
             neighbourhood.append(tile.getAdjacent('right'))
             neighbourhood.append(tile.getAdjacent('left'))
@@ -61,10 +62,14 @@ class Enemy():
         output.setOrientation(ori)
         output.setPosition(position)
         output.setTiles(tiles)
+        output.setOwner(self)
         self.ships.append(output)
         self.printinfo(output)
         return True
 
+    def addToPriority(self,id,ori):
+        together = (id,ori)
+        self.priority_shots.append(together)
 
     def takeBlindShot(self):
         valid = 0
@@ -72,33 +77,69 @@ class Enemy():
         while valid == 0:
             shot = random.randint(0,99)
             tile = self.board.player.getTileFromBoard(shot)
-            if tile.shot == 1:
-                pass
+            if tile.shot == 1 or shot in self.forbidden_shots:
+                return 1
             else:
                 tile.shot = 1
                 if tile.inShip == 1:
                     tile.imageShipHit()
                     ship = tile.getShip()
                     ship.getHit()
-                    neigh = []
-                    neigh.append(tile.getAdjacent('right'))
-                    neigh.append(tile.getAdjacent('top'))
-                    neigh.append(tile.getAdjacent('left'))
-                    neigh.append(tile.getAdjacent('down'))
-                    for tile in neigh:
-                        if tile != None:
-                            self.priority_shots.append(tile.getId())
-
+                    for i in range(4):
+                        ori = self.orientations[i]
+                        next_tile = tile.getAdjacent(ori)
+                        if next_tile == None:
+                            pass
+                        else:
+                            self.priority_shots.append([next_tile,ori])
                     hit = 1
                 else:
                     tile.imageMiss()
                     hit = 0
-            print(self.priority_shots)
             valid = 1
             return hit
 
     def takePriorityShot(self):
-        pass
+        data = self.priority_shots[-1]
+        self.priority_shots.remove(data)
+        id = data[0].getId()
+        ori = data[1]
+        tile = self.board.player.getTileFromBoard(id)
+        if tile.shot == 1:
+            return 1
+        else:
+            tile.shot = 1
+            if tile.inShip == 1:
+                tile.imageShipHit()
+                ship = tile.getShip()
+                ship.getHit()
+                if ship.destroyed == 1:
+                    self.priority_shots = []
+                    ship_tiles = ship.tiles
+                    for shiptile in ship_tiles:
+                        for i in range(4):
+                            next_tile = shiptile.getAdjacent(self.orientations[i])
+                            if next_tile != None:
+                                self.forbidden_shots.append(next_tile.getId())
+                else:
+                    if ori == 'left' or ori == 'right':
+                        for entry in self.priority_shots:
+                            if entry[1] == 'top' or entry[1] == 'down':
+                                self.priority_shots.remove(entry)
+                    if ori == 'top' or ori == 'down':
+                        for entry in self.priority_shots:
+                            if entry[1] == 'left' or entry[1] == 'right':
+                                self.priority_shots.remove(entry)
+                    next_tile = tile.getAdjacent(ori)
+                    if next_tile != None:
+                        self.priority_shots.append([next_tile,ori])
+                hit = 1
+            else:
+                tile.imageMiss()
+                hit = 0
+        return hit
+
+
 
 
 
@@ -127,18 +168,19 @@ class Enemy():
         return self.orientations[roll]
 
     def takeTurn(self):
-        missed = 0
-        while missed == 0:
-            # if len(self.priority_shots) == 0:
-            #     x = self.takeBlindShot()
-            # else:
-            #     x = self.takePriorityShot()
-            x = self.takeBlindShot()
-            if x:
-                missed = 0
-            else:
-                missed = 1
-        self.window.changeTurn()
+        if self.phase == 1:
+            missed = 0
+            while missed == 0:
+                self.board.player.checkVictory()
+                if len(self.priority_shots) == 0:
+                    x = self.takeBlindShot()
+                else:
+                    x = self.takePriorityShot()
+                if x:
+                    missed = 0
+                else:
+                    missed = 1
+            self.window.changeTurn()
 
     def clearShips(self):
         for ship in self.ships:
@@ -156,6 +198,14 @@ class Enemy():
                         tile.invalid = 0
         self.ships = []
         self.remaining = [4,3,2,1]
+
+    def increaseDestroyed(self):
+        self.destroyed += 1
+
+    def checkVictory(self):
+        print("destroyed: " + str(self.destroyed) + " avaiulable: " + str(len(self.ships)))
+        if self.destroyed == len(self.ships):
+            self.window.triggerPlayerVictory()
 
 
         
