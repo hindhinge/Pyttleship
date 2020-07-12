@@ -19,7 +19,6 @@ class Board(GridLayout):
         for i in range(100):
             tile = Tile(self)
             tile.setId(i)
-            tile.text = str(i)
             tile.bind(on_press = self.clickTile)
             self.tiles.append(tile)
             self.add_widget(tile)
